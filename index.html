@@ -3,259 +3,407 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>360 Tour Builder</title>
+  <title>360 Tour Showcase</title>
   
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <!-- Pannellum 360 Viewer CSS & JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
   <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
   <style>
     :root {
-      --bg-color: #0f0f12;
-      --card-bg: #18181c;
-      --border-color: #27272a;
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --border-color: #2a2a2a;
       --text-main: #ffffff;
-      --text-muted: #9ca3af;
+      --text-muted: #8e8e8e;
+      --accent: #0070f3;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
     body {
       background-color: var(--bg-color);
       color: var(--text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Scrollbar for dark theme */
-    ::-webkit-scrollbar {
-      height: 6px;
-      width: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.3);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #3f3f46;
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #52525b;
+    /* Clean Navbar with Logo */
+    .navbar {
+      height: 56px;
+      background-color: #080808;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border-color);
     }
 
-    /* Thumbnail active state styling */
-    .scene-thumb-card.active {
-      border-color: #3b82f6 !important;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+    .nav-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
-    /* Pannellum custom positioning tweak */
-    .pnm-container {
+    .nav-logo {
+      height: 32px;
+      max-width: 160px;
+      object-fit: contain;
+    }
+
+    .logo-fallback {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 1px;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 24px;
+      flex: 1;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Grid Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+
+    .thumbnail-wrapper {
+      width: 100%;
+      height: 160px;
+      background-color: #252525;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thumbnail-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-photos {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .card-content {
+      padding: 16px;
+      background-color: #1a1a1a;
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .card-meta {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* 360 Tour Viewer Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      z-index: 1000;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      height: 50px;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #080808;
+      border-bottom: 1px solid var(--border-color);
+      z-index: 10;
+    }
+
+    .modal-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .scene-select {
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .modal-right {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .audio-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .audio-btn:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .viewer-relative-container {
+      position: relative;
+      width: 100%;
+      height: calc(100vh - 50px);
+      flex: 1;
+    }
+
+    #panorama-container {
       width: 100%;
       height: 100%;
     }
+
+    /* Bottom-Left Scene Thumbnails Bar */
+    .scene-thumbnails-bar {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      display: flex;
+      gap: 12px;
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 8px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      max-width: 80vw;
+      overflow-x: auto;
+    }
+
+    .thumb-item {
+      width: 110px;
+      height: 70px;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .thumb-item:hover {
+      transform: translateY(-3px);
+      border-color: #ffffff;
+    }
+
+    .thumb-item.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px rgba(0, 112, 243, 0.5);
+    }
+
+    .thumb-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumb-item .thumb-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 10px;
+      text-align: center;
+      padding: 2px 0;
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased">
+<body>
 
-  <!-- Global Audio Player for Background Music -->
-  <audio id="bg-music" loop preload="auto">
-    <source src="bgm.mp3" type="audio/mpeg">
-    <source src="music.mp3" type="audio/mpeg">
-  </audio>
+  <!-- Background Audio Element -->
+  <audio id="bg-audio" loop src="bgm.mp3"></audio>
 
-  <!-- Top Bar Navbar -->
-  <header class="bg-[#141417] border-b border-[#232328] px-4 py-2.5 text-xs flex items-center justify-between text-gray-400 select-none">
-    <div class="flex items-center space-x-6">
-      <div class="flex items-center space-x-2 text-gray-200 font-medium">
-        <span class="text-sm font-bold">○</span>
-        <span class="tracking-wide">360 Tour Builder</span>
-      </div>
-      <nav class="flex space-x-4">
-        <span class="text-gray-300 hover:text-white cursor-pointer transition-colors">Tour</span>
-        <span class="text-gray-400 hover:text-white cursor-pointer transition-colors">View</span>
-      </nav>
-    </div>
-    
-    <div class="flex items-center space-x-3">
-      <!-- Global Music Toggle -->
-      <button id="global-music-btn" onclick="toggleMusic()" class="bg-[#222227] hover:bg-[#2c2c33] text-gray-300 px-3 py-1 rounded text-xs border border-gray-700 flex items-center gap-2 transition-all">
-        <i id="global-music-icon" class="fa-solid fa-volume-xmark text-red-400"></i>
-        <span id="global-music-label">Music Off</span>
-      </button>
-
-      <button onclick="toggleGuideModal()" class="bg-[#222227] hover:bg-[#2c2c33] text-gray-300 px-2.5 py-1 rounded text-xs border border-gray-700 flex items-center gap-1.5 transition-all">
-        <i class="fa-solid fa-circle-info text-blue-400"></i> Setup Guide
-      </button>
-    </div>
-  </header>
-
-  <!-- Main Grid Showcase -->
-  <main class="flex-1 max-w-[1700px] w-full mx-auto px-6 py-8">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-      <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">Your Projects</h1>
-        <p class="text-xs text-gray-400 mt-1">Pick a project to edit, or start a new one.</p>
-      </div>
-      <button onclick="alert('Static Mode: Add images inside projects/project-X/ folders in your GitHub repository.')" class="bg-white text-black font-semibold text-xs px-4 py-2 rounded shadow hover:bg-gray-200 transition-colors flex items-center gap-2">
-        <i class="fa-solid fa-plus text-xs"></i> + New Project
-      </button>
-    </div>
-
-    <div id="project-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-      <!-- Cards rendered dynamically via JS -->
-    </div>
-  </main>
-
-  <!-- 360 Viewer Fullscreen Modal -->
-  <div id="viewer-modal" class="fixed inset-0 bg-black z-50 hidden flex flex-col">
-    <!-- Top Bar Controls inside Viewer -->
-    <div class="bg-[#141417]/95 backdrop-blur border-b border-[#232328] px-4 py-2.5 flex items-center justify-between text-white z-20">
-      <div class="flex items-center space-x-4">
-        <button onclick="closeViewer()" class="bg-[#24242a] hover:bg-[#32323b] text-gray-200 px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-all">
-          <i class="fa-solid fa-arrow-left"></i> Back
-        </button>
-        <div>
-          <h2 id="viewer-project-title" class="text-xs font-extrabold tracking-wide text-white uppercase">PROJECT 1</h2>
-        </div>
-        
-        <!-- Scene Selector Dropdown (Secondary Choice) -->
-        <select id="scene-dropdown" onchange="switchScene(parseInt(this.value))" class="bg-[#222228] text-gray-200 text-xs border border-gray-700 px-2 py-1 rounded outline-none focus:border-blue-500 cursor-pointer">
-        </select>
-      </div>
-
-      <div class="flex items-center space-x-3">
-        <!-- Viewer Audio Mute/Unmute Button -->
-        <button id="viewer-music-btn" onclick="toggleMusic()" class="bg-[#24242a] hover:bg-[#32323b] text-gray-300 px-3 py-1.5 rounded text-xs border border-gray-700/80 flex items-center gap-2 transition-all">
-          <i id="viewer-music-icon" class="fa-solid fa-volume-xmark text-red-400"></i>
-          <span id="viewer-music-text" class="hidden sm:inline">Music: Off</span>
-        </button>
-
-        <button onclick="toggleFullscreen()" title="Toggle Fullscreen" class="p-2 bg-[#24242a] hover:bg-[#32323b] rounded text-xs text-gray-300 hover:text-white transition-colors">
-          <i class="fa-solid fa-expand"></i>
-        </button>
-        <button onclick="closeViewer()" title="Close Viewer" class="p-2 bg-[#24242a] hover:bg-[#32323b] rounded text-xs text-gray-300 hover:text-white transition-colors">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Panorama Viewer Area -->
-    <div class="flex-1 relative bg-black overflow-hidden">
-      <div id="panorama" class="w-full h-full"></div>
-
-      <!-- BOTTOM LEFT SCENE THUMBNAILS BAR (Matches requested user design) -->
-      <div class="absolute bottom-6 left-6 z-30 max-w-[85vw] sm:max-w-[70vw] overflow-x-auto p-2 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 shadow-2xl flex items-center gap-3">
-        <div id="scene-thumbnails-container" class="flex items-center gap-3">
-          <!-- Dynamic Scene Thumbnail Cards will render here -->
-        </div>
-      </div>
+  <!-- Header with Top-Left Logo -->
+  <div class="navbar">
+    <div class="nav-logo-container">
+      <img src="logo.png" alt="Logo" class="nav-logo" onerror="this.style.display='none'; document.getElementById('logo-text').style.display='block';">
+      <span id="logo-text" class="logo-fallback" style="display: none;">MY LOGO</span>
     </div>
   </div>
 
-  <!-- Setup Instructions Modal -->
-  <div id="guide-modal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#18181c] border border-gray-800 rounded-lg max-w-2xl w-full p-6 shadow-2xl text-left">
-      <div class="flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-folder-tree text-blue-400"></i> Folder Structure & File Rules
-        </h3>
-        <button onclick="toggleGuideModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="text-xs text-gray-300 space-y-3 leading-relaxed">
-        <p>To organize multiple scenes and background music for your GitHub Pages deployment:</p>
-        
-        <div class="bg-[#111114] p-3 rounded border border-gray-800 font-mono text-[11px] text-emerald-400">
-          your-repository/<br>
-          ├── index.html<br>
-          ├── bgm.mp3 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;-- Background music file</span><br>
-          └── projects/<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;├── project-1/<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── scene-1.jpg &nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;-- Scene 1 panorama</span><br>
-          &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── scene-2.jpg &nbsp;&nbsp;&nbsp;<span class="text-gray-500">&lt;-- Scene 2 panorama</span><br>
-          &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── scene-3.jpg<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;├── project-2/<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── scene-1.jpg<br>
-          &nbsp;&nbsp;&nbsp;&nbsp;└── ... up to project-10/
-        </div>
+  <!-- Main Homepage Grid -->
+  <div class="container">
+    <div class="header">
+      <h1>Your Projects</h1>
+      <p>Pick a project to view 360 degree tours.</p>
+    </div>
 
-        <ul class="list-disc list-inside text-gray-400 space-y-1 bg-[#202026] p-3 rounded border border-gray-800">
-          <li><strong>Multiple Scenes:</strong> Name files <code class="text-amber-300">scene-1.jpg</code>, <code class="text-amber-300">scene-2.jpg</code>, etc. inside <code class="text-amber-300">projects/project-X/</code>.</li>
-          <li><strong>Background Music:</strong> Name your audio file <code class="text-amber-300">bgm.mp3</code> or <code class="text-amber-300">music.mp3</code> in the root repository folder.</li>
-        </ul>
+    <div class="grid" id="project-grid"></div>
+  </div>
+
+  <!-- 360 Tour Viewer Modal -->
+  <div class="modal" id="viewer-modal">
+    <div class="modal-header">
+      <div class="modal-left">
+        <span class="modal-title" id="modal-project-title">PROJECT 1</span>
+        <select id="scene-selector" class="scene-select" onchange="switchScene(parseInt(this.value))"></select>
       </div>
-      <div class="mt-5 text-right">
-        <button onclick="toggleGuideModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-medium px-4 py-1.5 rounded text-xs transition-colors">
-          Got it
+      <div class="modal-right">
+        <button class="audio-btn" id="audio-toggle-btn" onclick="toggleAudio()">
+          <span id="audio-icon">🎵</span>
+          <span id="audio-text">Audio On</span>
         </button>
+        <button class="close-btn" onclick="closeViewer()">&times;</button>
       </div>
+    </div>
+
+    <div class="viewer-relative-container">
+      <div id="panorama-container"></div>
+      
+      <!-- Bottom Left Scene Thumbnails Overlay -->
+      <div class="scene-thumbnails-bar" id="thumbs-bar"></div>
     </div>
   </div>
 
   <script>
     const totalProjects = 10;
-    const maxScenesPerProject = 10; // Scans scene-1.jpg up to scene-10.jpg
-    const projectGrid = document.getElementById('project-grid');
-    const audio = document.getElementById('bg-music');
-
-    // State management
-    const projectData = {}; 
-    let currentProjectId = null;
+    const maxScenesPerProject = 10;
+    const grid = document.getElementById('project-grid');
+    const audioEl = document.getElementById('bg-audio');
+    
+    let projectData = {};
+    let currentProjectIndex = null;
     let currentSceneIndex = 0;
-    let pannellumViewer = null;
-    let isMusicPlaying = false;
+    let viewerInstance = null;
+    let isAudioPlaying = false;
 
-    // Initialize Projects Array
+    // Initialize 10 Projects
     for (let i = 1; i <= totalProjects; i++) {
       projectData[i] = [];
       const card = document.createElement('div');
-      card.className = "bg-[#18181c] hover:bg-[#1f1f24] border border-[#26262c] hover:border-gray-600 rounded-md overflow-hidden cursor-pointer transition-all duration-200 flex flex-col group shadow-lg";
-      card.id = `project-card-${i}`;
+      card.className = 'card';
+      card.id = `card-${i}`;
 
       card.innerHTML = `
-        <div class="h-36 bg-[#121215] w-full flex items-center justify-center relative overflow-hidden border-b border-[#222228]" id="thumb-wrapper-${i}">
-          <span class="text-xs text-gray-500">Scanning folder...</span>
+        <div class="thumbnail-wrapper" id="thumb-container-${i}">
+          <span class="no-photos">Checking...</span>
         </div>
-        <div class="p-3.5 flex-1 flex flex-col justify-between">
-          <div>
-            <h3 class="font-extrabold text-xs text-white tracking-wider uppercase group-hover:text-blue-400 transition-colors">
-              PROJECT ${i}
-            </h3>
-            <p class="text-[11px] text-gray-400 italic mt-0.5 truncate" id="sub-${i}">
-              No address yet
-            </p>
-          </div>
-          <div class="mt-4 text-[11px] text-gray-500" id="meta-${i}">
-            0 scenes
-          </div>
+        <div class="card-content">
+          <div class="card-title">PROJECT ${i}</div>
+          <div class="card-subtitle" id="sub-${i}">No address yet</div>
+          <div class="card-meta" id="meta-${i}">0 scenes</div>
         </div>
       `;
 
-      projectGrid.appendChild(card);
-      scanProjectScenes(i);
+      grid.appendChild(card);
+      checkProjectScenes(i);
     }
 
-    // Scan for available scene images in local directory
-    async function scanProjectScenes(projectIndex) {
-      const detectedScenes = [];
+    // Check scene files (scene-1.jpg up to scene-10.jpg)
+    async function checkProjectScenes(projectIndex) {
+      const validScenes = [];
 
       for (let s = 1; s <= maxScenesPerProject; s++) {
-        const imagePath = `projects/project-${projectIndex}/scene-${s}.jpg`;
-        const exists = await testImageExists(imagePath);
+        const path = `projects/project-${projectIndex}/scene-${s}.jpg`;
+        const exists = await checkImageExists(path);
         if (exists) {
-          detectedScenes.push({
+          validScenes.push({
             name: `Scene ${s}`,
-            path: imagePath
+            path: path
           });
         }
       }
 
-      projectData[projectIndex] = detectedScenes;
-      updateCardDisplay(projectIndex, detectedScenes);
+      projectData[projectIndex] = validScenes;
+      updateCardUI(projectIndex, validScenes);
     }
 
-    function testImageExists(url) {
+    function checkImageExists(url) {
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => resolve(true);
@@ -264,19 +412,19 @@
       });
     }
 
-    function updateCardDisplay(index, scenes) {
-      const wrapper = document.getElementById(`thumb-wrapper-${index}`);
+    function updateCardUI(index, scenes) {
+      const thumbContainer = document.getElementById(`thumb-container-${index}`);
       const meta = document.getElementById(`meta-${index}`);
-      const card = document.getElementById(`project-card-${index}`);
+      const card = document.getElementById(`card-${index}`);
 
       if (scenes.length > 0) {
-        wrapper.innerHTML = `<img src="${scenes[0].path}" alt="Project ${index}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">`;
-        meta.innerText = `${scenes.length} ${scenes.length === 1 ? 'scene' : 'scenes'}`;
+        thumbContainer.innerHTML = `<img src="${scenes[0].path}" class="thumbnail-img" alt="Project ${index}">`;
+        meta.innerText = `${scenes.length} scene${scenes.length > 1 ? 's' : ''}`;
         card.onclick = () => openViewer(index);
       } else {
-        wrapper.innerHTML = `<div class="flex flex-col items-center justify-center text-gray-500 bg-[#141417] w-full h-full"><span class="text-xs font-medium">No photos yet</span></div>`;
-        meta.innerText = '0 scenes';
-        card.onclick = () => alert(`Add images inside "projects/project-${index}/scene-1.jpg" to activate this project.`);
+        thumbContainer.innerHTML = `<span class="no-photos">No photos yet</span>`;
+        meta.innerText = `0 scenes`;
+        card.onclick = () => alert(`Add images into "projects/project-${index}/scene-1.jpg" to enable 360 view.`);
       }
     }
 
@@ -284,161 +432,111 @@
       const scenes = projectData[projectIndex];
       if (!scenes || scenes.length === 0) return;
 
-      currentProjectId = projectIndex;
+      currentProjectIndex = projectIndex;
       currentSceneIndex = 0;
 
-      document.getElementById('viewer-project-title').innerText = `PROJECT ${projectIndex}`;
-      document.getElementById('viewer-modal').classList.remove('hidden');
-
+      document.getElementById('modal-project-title').innerText = `PROJECT ${projectIndex}`;
+      
       // Populate Scene Dropdown
-      const dropdown = document.getElementById('scene-dropdown');
-      dropdown.innerHTML = scenes.map((s, idx) => 
-        `<option value="${idx}">${s.name}</option>`
+      const selector = document.getElementById('scene-selector');
+      selector.innerHTML = scenes.map((s, idx) => 
+        `<option value="${idx}">Scene ${idx + 1}</option>`
       ).join('');
 
-      // Render Bottom-Left Scene Thumbnails
-      renderBottomThumbnails(scenes, 0);
+      // Populate Bottom-Left Thumbnails Bar
+      const thumbsBar = document.getElementById('thumbs-bar');
+      thumbsBar.innerHTML = scenes.map((s, idx) => `
+        <div class="thumb-item ${idx === 0 ? 'active' : ''}" id="thumb-item-${idx}" onclick="switchScene(${idx})">
+          <img src="${s.path}" alt="Scene ${idx + 1}">
+          <div class="thumb-label">Scene ${idx + 1}</div>
+        </div>
+      `).join('');
 
-      // Load Pannellum 360 Scene
-      loadPannellumScene(scenes[0].path);
+      document.getElementById('viewer-modal').style.display = 'flex';
+      load360Panorama(scenes[0].path);
 
-      // Attempt background music playback
+      // Play audio when entering project view
       playAudio();
     }
 
-    function renderBottomThumbnails(scenes, activeIdx) {
-      const container = document.getElementById('scene-thumbnails-container');
-      container.innerHTML = '';
-
-      scenes.forEach((scene, idx) => {
-        const thumb = document.createElement('div');
-        const isActive = idx === activeIdx;
-
-        thumb.className = `scene-thumb-card flex-shrink-0 w-24 h-16 rounded border-2 overflow-hidden cursor-pointer relative group transition-all duration-200 ${
-          isActive ? 'active border-blue-500 scale-105' : 'border-gray-600/80 hover:border-gray-300 opacity-80 hover:opacity-100'
-        }`;
-
-        thumb.onclick = () => switchScene(idx);
-
-        thumb.innerHTML = `
-          <img src="${scene.path}" alt="${scene.name}" class="w-full h-full object-cover">
-          <div class="absolute inset-x-0 bottom-0 bg-black/75 px-1.5 py-0.5 text-[10px] font-medium text-white truncate text-center">
-            ${scene.name}
-          </div>
-        `;
-
-        container.appendChild(thumb);
-      });
-    }
-
     function switchScene(sceneIdx) {
-      const scenes = projectData[currentProjectId];
+      const scenes = projectData[currentProjectIndex];
       if (!scenes || !scenes[sceneIdx]) return;
 
       currentSceneIndex = sceneIdx;
+      document.getElementById('scene-selector').value = sceneIdx;
 
-      // Update dropdown selector
-      document.getElementById('scene-dropdown').value = sceneIdx;
+      // Update thumbnail active states
+      document.querySelectorAll('.thumb-item').forEach((el, idx) => {
+        if (idx === sceneIdx) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
 
-      // Update active thumbnail card UI
-      renderBottomThumbnails(scenes, sceneIdx);
-
-      // Reload Pannellum viewer scene
-      loadPannellumScene(scenes[sceneIdx].path);
+      load360Panorama(scenes[sceneIdx].path);
     }
 
-    function loadPannellumScene(imagePath) {
-      if (pannellumViewer) {
-        try { pannellumViewer.destroy(); } catch(e){}
+    function load360Panorama(imagePath) {
+      if (viewerInstance) {
+        viewerInstance.destroy();
       }
 
-      pannellumViewer = pannellum.viewer('panorama', {
+      viewerInstance = pannellum.viewer('panorama-container', {
         type: 'equirectangular',
         panorama: imagePath,
         autoLoad: true,
-        autoRotate: -2,
-        compass: true,
-        showControls: true
+        autoRotate: -2
       });
     }
 
     function playAudio() {
-      audio.play().then(() => {
-        isMusicPlaying = true;
-        updateMusicUI();
+      audioEl.play().then(() => {
+        isAudioPlaying = true;
+        updateAudioButtonUI();
       }).catch(err => {
-        // Handle browser autoplay policy cleanly
-        console.log("Autoplay blocked or audio file missing. User interaction needed.");
-        isMusicPlaying = false;
-        updateMusicUI();
+        // Handle browser autoplay restriction silently
+        isAudioPlaying = false;
+        updateAudioButtonUI();
       });
     }
 
-    function toggleMusic() {
-      if (isMusicPlaying) {
-        audio.pause();
-        isMusicPlaying = false;
+    function toggleAudio() {
+      if (isAudioPlaying) {
+        audioEl.pause();
+        isAudioPlaying = false;
       } else {
-        audio.play().then(() => {
-          isMusicPlaying = true;
-        }).catch(err => {
-          alert("Could not play audio. Please ensure 'bgm.mp3' or 'music.mp3' exists in your root folder.");
-          isMusicPlaying = false;
-        });
+        audioEl.play();
+        isAudioPlaying = true;
       }
-      updateMusicUI();
+      updateAudioButtonUI();
     }
 
-    function updateMusicUI() {
-      const globalBtn = document.getElementById('global-music-btn');
-      const globalIcon = document.getElementById('global-music-icon');
-      const globalLabel = document.getElementById('global-music-label');
-
-      const viewerIcon = document.getElementById('viewer-music-icon');
-      const viewerText = document.getElementById('viewer-music-text');
-
-      if (isMusicPlaying) {
-        globalIcon.className = 'fa-solid fa-volume-high text-emerald-400';
-        globalLabel.innerText = 'Music On';
-        
-        viewerIcon.className = 'fa-solid fa-volume-high text-emerald-400';
-        viewerText.innerText = 'Music: On';
+    function updateAudioButtonUI() {
+      const icon = document.getElementById('audio-icon');
+      const text = document.getElementById('audio-text');
+      if (isAudioPlaying) {
+        icon.innerText = '🎵';
+        text.innerText = 'Audio On';
       } else {
-        globalIcon.className = 'fa-solid fa-volume-xmark text-red-400';
-        globalLabel.innerText = 'Music Off';
-
-        viewerIcon.className = 'fa-solid fa-volume-xmark text-red-400';
-        viewerText.innerText = 'Music: Off';
+        icon.innerText = '🔇';
+        text.innerText = 'Audio Off';
       }
     }
 
     function closeViewer() {
-      document.getElementById('viewer-modal').classList.add('hidden');
-      if (pannellumViewer) {
-        try { pannellumViewer.destroy(); } catch(e){}
-        pannellumViewer = null;
+      document.getElementById('viewer-modal').style.display = 'none';
+      if (viewerInstance) {
+        viewerInstance.destroy();
+        viewerInstance = null;
       }
+      
+      // Stop audio when leaving project page
+      audioEl.pause();
+      audioEl.currentTime = 0;
+      isAudioPlaying = false;
     }
-
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.getElementById('viewer-modal').requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    }
-
-    function toggleGuideModal() {
-      document.getElementById('guide-modal').classList.toggle('hidden');
-    }
-
-    // Keyboard support
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closeViewer();
-        document.getElementById('guide-modal').classList.add('hidden');
-      }
-    });
   </script>
 </body>
 </html>
