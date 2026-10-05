@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>360 Tour Builder</title>
+  
+  <!-- Pannellum 360 Viewer CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --border-color: #2a2a2a;
+      --text-main: #ffffff;
+      --text-muted: #8e8e8e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      height: 40px;
+      background-color: #080808;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 20px;
+      font-size: 13px;
+      color: #ccc;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .nav-brand::before {
+      content: "⊙";
+    }
+
+    .container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 24px;
+      flex: 1;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+
+    .thumbnail-wrapper {
+      width: 100%;
+      height: 160px;
+      background-color: #252525;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thumbnail-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-photos {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .card-content {
+      padding: 16px;
+      background-color: #1a1a1a;
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .card-meta {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Modal & Scene Controls */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 1000;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #080808;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .scene-select {
+      background-color: #222;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    #panorama-container {
+      width: 100%;
+      height: calc(100vh - 60px);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="navbar">
+    <div class="nav-brand">360 Tour Builder</div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>Your Projects</h1>
+        <p>Pick a project to edit, or start a new one.</p>
+      </div>
+    </div>
+
+    <div class="grid" id="project-grid"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="viewer-modal">
+    <div class="modal-header">
+      <div class="modal-controls">
+        <strong id="modal-project-title">PROJECT 1</strong>
+        <select id="scene-selector" class="scene-select" onchange="switchScene(this.value)"></select>
+      </div>
+      <button class="close-btn" onclick="closeViewer()">&times;</button>
+    </div>
+    <div id="panorama-container"></div>
+  </div>
+
+  <script>
+    const totalProjects = 10;
+    const maxScenesPerProject = 10; // Checks up to scene-10.jpg per project
+    const grid = document.getElementById('project-grid');
+    
+    // Store detected valid scenes for each project
+    const projectData = {}; 
+    let viewerInstance = null;
+
+    for (let i = 1; i <= totalProjects; i++) {
+      projectData[i] = [];
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.id = `card-${i}`;
+
+      card.innerHTML = `
+        <div class="thumbnail-wrapper" id="thumb-container-${i}">
+          <span class="no-photos">Checking...</span>
+        </div>
+        <div class="card-content">
+          <div class="card-title">PROJECT ${i}</div>
+          <div class="card-subtitle" id="sub-${i}">No address yet</div>
+          <div class="card-meta" id="meta-${i}">0 scenes</div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+      checkProjectScenes(i);
+    }
+
+    // Automatically check for available scenes (scene-1.jpg to scene-10.jpg)
+    async function checkProjectScenes(projectIndex) {
+      const validScenes = [];
+
+      for (let s = 1; s <= maxScenesPerProject; s++) {
+        const path = `projects/project-${projectIndex}/scene-${s}.jpg`;
+        const exists = await checkImageExists(path);
+        if (exists) {
+          validScenes.push({
+            name: `Scene ${s}`,
+            path: path
+          });
+        }
+      }
+
+      projectData[projectIndex] = validScenes;
+      updateCardUI(projectIndex, validScenes);
+    }
+
+    function checkImageExists(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }
+
+    function updateCardUI(index, scenes) {
+      const thumbContainer = document.getElementById(`thumb-container-${index}`);
+      const meta = document.getElementById(`meta-${index}`);
+      const card = document.getElementById(`card-${index}`);
+
+      if (scenes.length > 0) {
+        thumbContainer.innerHTML = `<img src="${scenes[0].path}" class="thumbnail-img" alt="Project ${index}">`;
+        meta.innerText = `${scenes.length} scene${scenes.length > 1 ? 's' : ''}`;
+        card.onclick = () => openViewer(index);
+      } else {
+        thumbContainer.innerHTML = `<span class="no-photos">No photos yet</span>`;
+        meta.innerText = `0 scenes`;
+        card.onclick = () => alert(`Add images into "projects/project-${index}/scene-1.jpg" to enable 360 view.`);
+      }
+    }
+
+    function openViewer(projectIndex) {
+      const scenes = projectData[projectIndex];
+      if (!scenes || scenes.length === 0) return;
+
+      document.getElementById('modal-project-title').innerText = `PROJECT ${projectIndex}`;
+      const selector = document.getElementById('scene-selector');
+      
+      // Populate scene dropdown options
+      selector.innerHTML = scenes.map((s, idx) => 
+        `<option value="${s.path}">Scene ${idx + 1}</option>`
+      ).join('');
+
+      document.getElementById('viewer-modal').style.display = 'flex';
+      load360Panorama(scenes[0].path);
+    }
+
+    function switchScene(imagePath) {
+      load360Panorama(imagePath);
+    }
+
+    function load360Panorama(imagePath) {
+      if (viewerInstance) {
+        viewerInstance.destroy();
+      }
+
+      viewerInstance = pannellum.viewer('panorama-container', {
+        type: 'equirectangular',
+        panorama: imagePath,
+        autoLoad: true,
+        autoRotate: -2
+      });
+    }
+
+    function closeViewer() {
+      document.getElementById('viewer-modal').style.display = 'none';
+      if (viewerInstance) {
+        viewerInstance.destroy();
+        viewerInstance = null;
+      }
+    }
+  </script>
+</body>
+</html>
