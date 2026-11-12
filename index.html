@@ -34,40 +34,11 @@
       flex-direction: column;
     }
 
-    /* Clean Navbar with Logo */
-    .navbar {
-      height: 56px;
-      background-color: #080808;
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .nav-logo-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .nav-logo {
-      height: 32px;
-      max-width: 160px;
-      object-fit: contain;
-    }
-
-    .logo-fallback {
-      font-weight: 700;
-      font-size: 16px;
-      letter-spacing: 1px;
-      color: #ffffff;
-    }
-
     .container {
       max-width: 1400px;
       width: 100%;
       margin: 0 auto;
-      padding: 30px 24px;
+      padding: 36px 24px;
       flex: 1;
     }
 
@@ -162,7 +133,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: #000;
+      background-color: #141414;
       z-index: 1000;
       flex-direction: column;
     }
@@ -188,6 +159,7 @@
       font-size: 15px;
       font-weight: 700;
       letter-spacing: 0.5px;
+      text-transform: uppercase;
     }
 
     .scene-select {
@@ -244,6 +216,25 @@
     #panorama-container {
       width: 100%;
       height: 100%;
+    }
+
+    /* Override Pannellum Loading Screen to Solid Dark Grey */
+    .pnlm-container {
+      background: #141414 !important;
+      background-image: none !important;
+    }
+
+    .pnlm-load-box {
+      background-color: #1e1e1e !important;
+      border: 1px solid #333333 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .pnlm-load-box p {
+      font-size: 16px !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.3px !important;
     }
 
     /* Bottom-Left Scene Thumbnails Bar */
@@ -308,14 +299,6 @@
   <!-- Background Audio Element -->
   <audio id="bg-audio" loop src="bgm.mp3"></audio>
 
-  <!-- Header with Top-Left Logo -->
-  <div class="navbar">
-    <div class="nav-logo-container">
-      <img src="logo.png" alt="Logo" class="nav-logo" onerror="this.style.display='none'; document.getElementById('logo-text').style.display='block';">
-      <span id="logo-text" class="logo-fallback" style="display: none;">MY LOGO</span>
-    </div>
-  </div>
-
   <!-- Main Homepage Grid -->
   <div class="container">
     <div class="header">
@@ -355,6 +338,22 @@
     const maxScenesPerProject = 10;
     const grid = document.getElementById('project-grid');
     const audioEl = document.getElementById('bg-audio');
+
+    // ==========================================
+    // EDIT PROJECT NAMES & ADDRESSES HERE
+    // ==========================================
+    const projectDetails = [
+      { title: "PROJECT 1", address: "No address yet" },
+      { title: "PROJECT 2", address: "No address yet" },
+      { title: "PROJECT 3", address: "No address yet" },
+      { title: "PROJECT 4", address: "No address yet" },
+      { title: "PROJECT 5", address: "No address yet" },
+      { title: "PROJECT 6", address: "No address yet" },
+      { title: "PROJECT 7", address: "No address yet" },
+      { title: "PROJECT 8", address: "No address yet" },
+      { title: "PROJECT 9", address: "No address yet" },
+      { title: "PROJECT 10", address: "No address yet" }
+    ];
     
     let projectData = {};
     let currentProjectIndex = null;
@@ -365,6 +364,8 @@
     // Initialize 10 Projects
     for (let i = 1; i <= totalProjects; i++) {
       projectData[i] = [];
+      const details = projectDetails[i - 1];
+
       const card = document.createElement('div');
       card.className = 'card';
       card.id = `card-${i}`;
@@ -374,8 +375,8 @@
           <span class="no-photos">Checking...</span>
         </div>
         <div class="card-content">
-          <div class="card-title">PROJECT ${i}</div>
-          <div class="card-subtitle" id="sub-${i}">No address yet</div>
+          <div class="card-title">${details.title}</div>
+          <div class="card-subtitle" id="sub-${i}">${details.address}</div>
           <div class="card-meta" id="meta-${i}">0 scenes</div>
         </div>
       `;
@@ -418,7 +419,7 @@
       const card = document.getElementById(`card-${index}`);
 
       if (scenes.length > 0) {
-        thumbContainer.innerHTML = `<img src="${scenes[0].path}" class="thumbnail-img" alt="Project ${index}">`;
+        thumbContainer.innerHTML = `<img src="${scenes[0].path}" class="thumbnail-img" alt="${projectDetails[index - 1].title}">`;
         meta.innerText = `${scenes.length} scene${scenes.length > 1 ? 's' : ''}`;
         card.onclick = () => openViewer(index);
       } else {
@@ -435,7 +436,7 @@
       currentProjectIndex = projectIndex;
       currentSceneIndex = 0;
 
-      document.getElementById('modal-project-title').innerText = `PROJECT ${projectIndex}`;
+      document.getElementById('modal-project-title').innerText = projectDetails[projectIndex - 1].title;
       
       // Populate Scene Dropdown
       const selector = document.getElementById('scene-selector');
@@ -487,7 +488,10 @@
         type: 'equirectangular',
         panorama: imagePath,
         autoLoad: true,
-        autoRotate: -2
+        autoRotate: -2,
+        strings: {
+          loadingLabel: 'Teleporting you in...'
+        }
       });
     }
 
