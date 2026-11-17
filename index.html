@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>360 Tour Showcase</title>
+  <title>Galerie 89 — 360 Tour Showcase</title>
   
   <!-- Pannellum 360 Viewer CSS & JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
@@ -38,8 +38,23 @@
       max-width: 1400px;
       width: 100%;
       margin: 0 auto;
-      padding: 36px 24px;
+      padding: 32px 24px 48px;
       flex: 1;
+    }
+
+    /* Top-Left Logo */
+    .brand-logo-wrap {
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-logo {
+      height: 38px;
+      width: auto;
+      max-width: 220px;
+      object-fit: contain;
+      display: block;
     }
 
     .header {
@@ -57,10 +72,10 @@
       font-size: 14px;
     }
 
-    /* Grid Layout */
+    /* Grid Layout (4 columns on desktop so 12 cards align in 3 neat rows) */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
     }
 
@@ -301,6 +316,11 @@
 
   <!-- Main Homepage Grid -->
   <div class="container">
+    <!-- Top-Left Logo -->
+    <div class="brand-logo-wrap">
+      <img src="logo.png" alt="Galerie 89" class="brand-logo" onerror="this.style.display='none'">
+    </div>
+
     <div class="header">
       <h1>Your Projects</h1>
       <p>Pick a project to view 360 degree tours.</p>
@@ -334,25 +354,27 @@
   </div>
 
   <script>
-    const totalProjects = 10;
+    const totalProjects = 12;
     const maxScenesPerProject = 10;
     const grid = document.getElementById('project-grid');
     const audioEl = document.getElementById('bg-audio');
 
     // ==========================================
-    // EDIT PROJECT NAMES & ADDRESSES HERE
+    // EDIT PROJECT NAMES & ADDRESSES HERE (12 PROJECTS)
     // ==========================================
     const projectDetails = [
-      { title: "Regent Height", address: "Singapore" },
+      { title: "REGENT HEIGHT", address: "Singapore" },
       { title: "PROJECT 2", address: "Singapore" },
-      { title: "Office Meeting Room", address: "Singapore" },
-      { title: "Eyewear Store", address: "Singapore" },
-      { title: "Yew Tee", address: "Singapore" },
-      { title: "PROJECT 6", address: "No address yet" },
+      { title: "OFFICE MEETING ROOM", address: "Singapore" },
+      { title: "EYEWEAR STORE", address: "Singapore" },
+      { title: "YEW TEE", address: "Singapore" },
+      { title: "HDB BLK 95A", address: "Singapore" },
       { title: "PROJECT 7", address: "No address yet" },
       { title: "PROJECT 8", address: "No address yet" },
       { title: "PROJECT 9", address: "No address yet" },
-      { title: "PROJECT 10", address: "No address yet" }
+      { title: "PROJECT 10", address: "No address yet" },
+      { title: "PROJECT 11", address: "No address yet" },
+      { title: "PROJECT 12", address: "No address yet" }
     ];
     
     let projectData = {};
@@ -361,7 +383,7 @@
     let viewerInstance = null;
     let isAudioPlaying = false;
 
-    // Initialize 10 Projects
+    // Initialize 12 Projects
     for (let i = 1; i <= totalProjects; i++) {
       projectData[i] = [];
       const details = projectDetails[i - 1];
@@ -499,8 +521,7 @@
       audioEl.play().then(() => {
         isAudioPlaying = true;
         updateAudioButtonUI();
-      }).catch(err => {
-        // Handle browser autoplay restriction silently
+      }).catch(() => {
         isAudioPlaying = false;
         updateAudioButtonUI();
       });
